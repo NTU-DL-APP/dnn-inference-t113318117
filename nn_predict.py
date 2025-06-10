@@ -1,14 +1,23 @@
+
 import numpy as np
 import json
 
 # === Activation functions ===
 def relu(x):
-    # TODO: Implement the Rectified Linear Unit
-    return x
+    return np.maximum(0,x)
 
 def softmax(x):
-    # TODO: Implement the SoftMax function
-    return x
+    x = np.asarray(x, dtype=np.float64)
+    if x.ndim == 1:
+        x = x - np.max(x)
+        exp_x = np.exp(x)
+        return exp_x / np.sum(exp_x)
+    elif x.ndim == 2:
+        x = x - np.max(x, axis=1, keepdims=True)
+        exp_x = np.exp(x)
+        return exp_x / np.sum(exp_x, axis=1, keepdims=True)
+    else:
+        raise ValueError("Softmax input must be 1D or 2D")
 
 # === Flatten ===
 def flatten(x):
@@ -18,12 +27,10 @@ def flatten(x):
 def dense(x, W, b):
     return x @ W + b
 
-# Infer TensorFlow h5 model using numpy
-# Support only Dense, Flatten, relu, softmax now
+# Inference using architecture and weights
 def nn_forward_h5(model_arch, weights, data):
-    x = data
+    x = data.astype(np.float64)
     for layer in model_arch:
-        lname = layer['name']
         ltype = layer['type']
         cfg = layer['config']
         wnames = layer['weights']
@@ -34,15 +41,14 @@ def nn_forward_h5(model_arch, weights, data):
             W = weights[wnames[0]]
             b = weights[wnames[1]]
             x = dense(x, W, b)
-            if cfg.get("activation") == "relu":
+            activation = cfg.get("activation")
+            if activation == "relu":
                 x = relu(x)
-            elif cfg.get("activation") == "softmax":
+            elif activation == "softmax":
                 x = softmax(x)
 
     return x
 
-
-# You are free to replace nn_forward_h5() with your own implementation 
+# Entry point for testing
 def nn_inference(model_arch, weights, data):
     return nn_forward_h5(model_arch, weights, data)
-    
