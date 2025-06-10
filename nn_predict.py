@@ -7,6 +7,7 @@ def relu(x):
     return np.maximum(0, x)
 
 def softmax(x):
+    x = x.astype(np.float32)
     if x.ndim == 1:
         e_x = np.exp(x - np.max(x))
         return e_x / np.sum(e_x)
